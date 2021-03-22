@@ -1,5 +1,6 @@
 // -----------Imports-------------------------------
 #include <Servo.h>
+#include "String.h"
 
 // --------Instantiations---------------------------
               //   LEG #     1      |     2     |     3      |     4   
@@ -13,26 +14,23 @@ int directions[12] = {-1, -1, -1, -1, +1, +1, +1, -1, -1, +1, +1, +1};
 const float l = 5;
 const float L = 14.5;
 
+
+//For Serial Terminal Control
+float float0 = 0.0;
+float float1 = 0.0;
+float float2 = 0.0;
+int num3 = 0;
+const int numChars = 32;
+String Commands;
+
 // -------------Set Up-------------------------------
 
 void setup() {
   // put your setup code here, to run once:
   delay(1000);
   Serial.begin(9600);
-  for(int i=0; i<12; i++){
-     s[i].attach(i+2);
-     delay(100);
-  }
-  for(int i=0; i<12; i++){
-     s[i].write(zeroPositions[i]);
-     delay(100);
-  }
-  translate(-5,0,5);
-  delay(5000);
-  translate(0,0,9);
-  delay(5000);
-  translate(-5,0,5);
-  delay(5000);
+  initalize();
+  
 }
 
 
@@ -41,12 +39,54 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
   delay(1000);
+  
 }
 
 
 // -----------Functions------------------------------
+void initalize(){
+    for(int i=0; i<12; i++){
+     s[i].attach(i+2);
+     delay(100);
+  }
+  for(int i=0; i<12; i++){
+     s[i].write(zeroPositions[i]);
+     delay(100);
+  }
+}
+
+void readSerialforPos(){
+      if(Serial.available()>0){
+      Commands = Serial.readString();
+      //Serial.println(Commands);
+      char * strtokIndx; // this is used by strtok() as an index
+
+      strtokIndx = strtok(Commands.c_str(),",");      // get the first part - the string
+      float0 = atof(strtokIndx);              // convert this part to a float
+      strtokIndx = strtok(NULL, ",");          // this continues where the previous call left off
+      float1 = atof(strtokIndx);              // convert this part to an integer
+
+      strtokIndx = strtok(NULL, ",");
+      float2 = atof(strtokIndx);              // convert this part to a float
+
+      strtokIndx = strtok(NULL, ",");
+      num3 = atoi(strtokIndx);   
+      Commands = "";
+   
+      Serial.print("X:");
+      Serial.print(float0);
+      Serial.print(", Y:");
+      Serial.print(float1);
+      Serial.print(", Z:");
+      Serial.print(float2);
+      Serial.print(", Leg:");
+      Serial.println(num3);
+      pos(float0,float1,float2,num3);
+    }
+}
+
+
 
 void pos(float x, float y, float z, int leg){
   float groinRadians = atan(y/z);
